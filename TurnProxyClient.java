@@ -13,23 +13,13 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class TurnProxyClient {
     public static void main(String[] args) {
-        if (args.length != 7) {
-            System.err.println(
-                    "Usage: TurnProxyClient <turn_host:port> <username> <password> <peer_host:port> <script_to_run_when_allocation_is_ready> <forward_ip:port>");
-            System.err.println(
-                    "This program connects to a TURN server, authorizes the specified peer address at the TURN server, then runs the specified script with the TURN-allocated proxy host:port, and then forwards everything from it to forward_ip:port");
-            System.err.println(
-                    "Example: TurnProxyClient 188.166.127.102:3478 someuser somepassword /bin/echo 127.0.0.1:1194");
-            System.exit(1);
-        }
-
         try {
             InetSocketAddress turnServerAddress = new InetSocketAddress("stunturn.com", 3478);
             String username = "root";
             String password = "root";
-            InetSocketAddress peerAddress = parseSocketAddress(args[3]);
+            InetSocketAddress peerAddress = parseSocketAddress("192.168.1.4:5000"); // Replace with your value
             String script = "/bin/echo";
-            InetSocketAddress forwardAddress = parseSocketAddress(args[5]);
+            InetSocketAddress forwardAddress = parseSocketAddress("192.168.1.2:5599"); // Replace with your value
 
             TurnClient turnClient = new TurnClient(turnServerAddress, username, password);
             InetSocketAddress relayAddress = turnClient.allocateRelayAddress();
@@ -142,6 +132,8 @@ public class TurnProxyClient {
 
             DatagramSocket socket = new DatagramSocket();
             byte[] requestData = createAllocateRequest();
+            //print out the request data
+            System.out.println("Request Data: " + new String(requestData, StandardCharsets.UTF_8));
             DatagramPacket requestPacket = new DatagramPacket(requestData, requestData.length, turnServerAddress);
             socket.send(requestPacket);
 
@@ -173,13 +165,14 @@ public class TurnProxyClient {
             // Attribute header constants
             short attributeType = 0x0020; // REQUESTED-TRANSPORT attribute
             short attributeLength = 0x0004; // Length of the attribute value
-            int protocol = 0x0011000000; // UDP protocol
+            // int protocol = 0x0011000000; // UDP protocol
+            int protocol = 0x0006000000; // TCP protocol
 
             // Authentication (if required)
             byte[] authenticationData = null;
-            if (username != null && password != null) {
-                authenticationData = createAuthenticationData(transactionId);
-            }
+            // if (username != null && password != null) {
+            //     authenticationData = createAuthenticationData(transactionId);
+            // }
 
             // Calculate the overall message length
             messageLength = (short) (20 + (authenticationData != null ? authenticationData.length : 0) + 8);
@@ -190,9 +183,9 @@ public class TurnProxyClient {
             buffer.putShort(messageType);
             buffer.putShort(messageLength);
             buffer.put(transactionId);
-            if (authenticationData != null) {
-                buffer.put(authenticationData);
-            }
+            // if (authenticationData != null) {
+            //     buffer.put(authenticationData);
+            // }
             buffer.putShort(attributeType);
             buffer.putShort(attributeLength);
             buffer.putInt(protocol);
