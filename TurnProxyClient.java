@@ -17,9 +17,9 @@ public class TurnProxyClient {
             InetSocketAddress turnServerAddress = new InetSocketAddress("stunturn.com", 3478);
             String username = "root";
             String password = "root";
-            InetSocketAddress peerAddress = parseSocketAddress("192.168.1.4:5000"); // Replace with your value
+            InetSocketAddress peerAddress = parseSocketAddress("192.168.1.4:5000"); 
             String script = "/bin/echo";
-            InetSocketAddress forwardAddress = parseSocketAddress("192.168.1.2:5599"); // Replace with your value
+            InetSocketAddress forwardAddress = parseSocketAddress("192.168.1.2:5599"); 
 
             TurnClient turnClient = new TurnClient(turnServerAddress, username, password);
             InetSocketAddress relayAddress = turnClient.allocateRelayAddress();
